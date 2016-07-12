@@ -1,6 +1,6 @@
 <?php
 
-	include( 'JSMin.php' );
+	include( 'jsmin-php/src/JSMin/JSMin.php' );
 
 	GLOBAL $argc, $argv;
 
