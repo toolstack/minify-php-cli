@@ -1,0 +1,3 @@
+[submodule "jsmin-php"]
+	path = jsmin-php
+	url = https://github.com/mrclay/jsmin-php.git
