@@ -1,6 +1,6 @@
 <?php
 
-	include( 'jsmin-php/src/JSMin/JSMin.php' );
+	include( dirname( __FILE__ ) . '/jsmin-php/src/JSMin/JSMin.php' );
 
 	GLOBAL $argc, $argv;
 
@@ -15,7 +15,7 @@
 	$file_list = array();
 
 	for( $i = 1; $i < $argc; $i++ ) {
-		// Check to see if the command line parameter is a directory, if so, look for all the .js files in it.
+		// Check to see if the command line parameter is a directory, if so, look for all the .js/.css files in it.
 		if( is_dir( $argv[$i] ) ) {
 			$files = scandir( $argv[$i] );
 
@@ -25,10 +25,18 @@
 					$file_list[] = $argv[$i] . '/' . $file;
 				}
 
+				// Only pick up the .css files that aren't already minified.
+				if( substr( $file, -4 ) === '.css' && substr( $file, -8 ) !== '.min.css' ) {
+					$file_list[] = $argv[$i] . '/' . $file;
+				}
 			}
 		} else if( file_exists( $argv[$i] ) ) {
 			// Only add the file if it has a .js extension.
-			if( substr( $argv[$i], -3 ) === '.js' ) {
+			if( substr( $argv[$i], -3 ) === '.js' && substr( $file, -7 ) !== '.min.js' ) {
+				$file_list[] = $argv[$i];
+			}
+
+			if( substr( $argv[$i], -4 ) === '.css' && substr( $file, -8 ) !== '.min.css' ) {
 				$file_list[] = $argv[$i];
 			}
 		}
@@ -39,7 +47,11 @@
 	// Now minify all the files we have selected.
 	foreach( $file_list as $file ) {
 		// Create the new filename.
-		$new_file = substr( $file, 0, -2 ) . 'min.js';
+		if( substr( $file, 0, -2 ) === 'js' ) {
+			$new_file = substr( $file, 0, -2 ) . 'min.js';
+		} else {
+			$new_file = substr( $file, 0, -3 ) . 'min.css';
+		}
 
 		$update_min_file = true;
 
@@ -58,7 +70,7 @@
 			$javascriptCode = file_get_contents( $file );
 			
 			// Minify the script.
-			$javascriptCode = JSMin::minify( $javascriptCode );
+			$javascriptCode = JSMin\JSMin::minify( $javascriptCode );
 
 			// Write the minified script back out.
 			file_put_contents( $new_file, $javascriptCode );
