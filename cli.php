@@ -47,7 +47,7 @@
 	// Now minify all the files we have selected.
 	foreach( $file_list as $file ) {
 		// Create the new filename.
-		if( substr( $file, 0, -2 ) === 'js' ) {
+		if( substr( $file, -2 ) === 'js' ) {
 			$new_file = substr( $file, 0, -2 ) . 'min.js';
 		} else {
 			$new_file = substr( $file, 0, -3 ) . 'min.css';
