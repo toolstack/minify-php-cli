@@ -1,5 +1,20 @@
 <?php
+	// Detect if UglifyJS is install.
+	$js_minifier = 'jsmin';
+	exec( 'uglifyjs --help', $output, $return_var );
 
+	if( 0 === $return_var ) {
+		$js_minifier = 'uglifyjs';
+	}
+	
+	// Detect if UglifyCSS is install.
+	$css_minifier = 'jsmin';
+	exec( 'uglifycss README.md', $output, $return_var );
+
+	if( 0 === $return_var ) {
+		$css_minifier = 'uglifycss';
+	}
+	
 	include( dirname( __FILE__ ) . '/jsmin-php/src/JSMin/JSMin.php' );
 
 	GLOBAL $argc, $argv;
@@ -9,7 +24,7 @@
 		echo 'Error, you must provide at least one js file!' . PHP_EOL;
 		exit;
 	}
-	
+
 	clearstatcache();
 
 	$file_list = array();
@@ -48,8 +63,10 @@
 	foreach( $file_list as $file ) {
 		// Create the new filename.
 		if( substr( $file, -2 ) === 'js' ) {
+			$file_type = 'js';
 			$new_file = substr( $file, 0, -2 ) . 'min.js';
 		} else {
+			$file_type = 'css';
 			$new_file = substr( $file, 0, -3 ) . 'min.css';
 		}
 
@@ -64,20 +81,32 @@
 			}
 		}
 		
-		// If the minified version news updating or doesn't exist, do it.
+		// If the minified version needs updating or doesn't exist, do it.
 		if( $update_min_file ) {
-			// Read the contents.
-			$javascriptCode = file_get_contents( $file );
 			
-			// Minify the script.
-			$javascriptCode = JSMin\JSMin::minify( $javascriptCode );
+			if( $file_type === 'js' && $js_minifier === 'uglifyjs' ) {
+				// Run uglifyjs with the old filename, compress and mangle options and the output new file name.
+				exec( 'uglifyjs "' . $file . '" -c -m -o "' . $new_file . '"' );
+			} else if( $file_type === 'css' && $css_minifier === 'uglifycss' ) {
+				// Run uglifycss with the old filename and redirect output to the new file name.
+				exec( 'uglifycss "' . $file . '" > "' . $new_file . '"' );
+			} else {
+				// Read the contents.
+				$javascriptCode = file_get_contents( $file );
+				
+				// Minify the script.
+				$javascriptCode = JSMin\JSMin::minify( $javascriptCode );
 
-			// Write the minified script back out.
-			file_put_contents( $new_file, $javascriptCode );
-			$files_processed ++;
+				// Write the minified script back out.
+				file_put_contents( $new_file, $javascriptCode );
+				$files_processed ++;
+			}
 		}
 	}
 
+	echo PHP_EOL;
+	echo ' JS Minifier Used: ' . $js_minifier . PHP_EOL;
+	echo 'CSS Minifier Used: ' . $css_minifier . PHP_EOL;
 	echo PHP_EOL;
 	echo '    Files found: ' . count( $file_list ) . PHP_EOL;
 	echo 'Files processed: ' . $files_processed . PHP_EOL;
