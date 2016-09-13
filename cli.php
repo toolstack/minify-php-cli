@@ -99,8 +99,9 @@
 
 				// Write the minified script back out.
 				file_put_contents( $new_file, $javascriptCode );
-				$files_processed ++;
 			}
+
+			$files_processed ++;
 		}
 	}
 
